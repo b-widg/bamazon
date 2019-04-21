@@ -80,7 +80,7 @@ function checkStock(ID, quantityRequested){
     //connection.end();
     if (quantityRequested <= quantityInStock) {
       price = quantityRequested * price;
-      term.green(`\nThank you for your order.  Your total is $${price}.\n`);
+      term.green(`\nThank you for your order.  Your total is $${price.toFixed(2)}.\n`);
       connection.query(`UPDATE products SET stock_quantity = ${quantityInStock - quantityRequested} WHERE item_id = ${ID}`, function(error, result) {
         if (error) throw error;
       });
