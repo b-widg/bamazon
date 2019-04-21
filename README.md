@@ -1,5 +1,6 @@
-# bamazon
-##Version: 1.0.0
+# BAMAZON
+
+## Version: 1.0.0
 
 Order from a wide selection of 10 products.  Whe the app is run, a table displays with Item ID, Description, Price, and Quantity In Stock.  Simply enter the ID number of the product you would like and number if items you want to buy.
 
