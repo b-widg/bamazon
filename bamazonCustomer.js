@@ -1,7 +1,7 @@
 // procucts table fields: 
   // item_id (auto-incriment, Int, primary key)
   // product_name (varChar255)
-  // department_name varChar255)
+  // department_name (varChar255)
   // price (Float)
   // stock_quantity(Int)
 require('dotenv').config();   // https://www.npmjs.com/package/dotenv
@@ -13,7 +13,6 @@ var inquirer = require('inquirer');   // https://www.npmjs.com/package/inquirer#
 var quantityOrdered = 0;
 var itemID = 0;
 
-//  https://www.youtube.com/watch?v=EN6Dx22cPRI
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -35,7 +34,6 @@ function getProductsTableData() {
   connection.query("SELECT * FROM products", function(error, result) {
     if (error) throw error;
     displayProductsTable(result);
-    //connection.end();
   });
 }
 
@@ -44,7 +42,7 @@ function displayProductsTable(result){
     head: ['Product ID', 'Description', 'Price', 'Quantity'],
     colWidths: [15, 45, 15]
   });
-  for(let item in result) {
+  for (let item in result) {
       productTable.push([result[item].item_id, result[item].product_name, `$` + result[item].price, result[item].stock_quantity]);
   }
   console.log(productTable.toString());
@@ -63,42 +61,34 @@ var questions = [{
   name: 'quantity',
   message: `Please enter quantity of units you would like to order.`,
 }]
-// {
-//   index: 2,
-//   type: 'input',
-//   name: 'too-many-reorder',
-//   message: `The number of units exceeds anount in stock.  Would you like to order what we have?`,
-// }
-
-  
 function promptUser(userPrompts){
   inquirer.prompt(userPrompts).then(answers => {
     itemID = answers.ProductID;
     quantityOrdered = answers.quantity;
-    console.log('quantityOrdered:', quantityOrdered)
-    console.log('itemID:', itemID)
     checkStock(itemID, quantityOrdered);
     
   });
 }
 
-function checkStock(ID, quantity){
-  console.log('quantity:', quantity)
-  console.log('ID:', ID)
-
-  // connection.connect(function(error) {
-  //   if (error) throw error;
-  // });
+function checkStock(ID, quantityRequested){
   connection.query(`SELECT * FROM products WHERE item_id = ${ID}`, function(error, result) {
     if (error) throw error;
-    let numInStock = result[4].stock_quantity;
-    Console.log(numInStock);
 
-    
-    
-    connection.end();
+    let quantityInStock = result[0].stock_quantity;
+    let price = result[0].price;
+
+    //connection.end();
+    if (quantityRequested <= quantityInStock) {
+      price = quantityRequested * price;
+      term.green(`\nThank you for your order.  Your total is $${price}.\n`);
+      connection.query(`UPDATE products SET stock_quantity = ${quantityInStock - quantityRequested} WHERE item_id = ${ID}`, function(error, result) {
+        if (error) throw error;
+      });
+      connection.end();
+    } else {
+      term.red(`\nQuantity exceeds available stock.  Order Canceled.\n`); 
+    }
   });
-  connection.end();
 }
 
 
