@@ -12,6 +12,8 @@ var inquirer = require('inquirer');   // https://www.npmjs.com/package/inquirer#
 
 var quantityOrdered = 0;
 var itemID = 0;
+var c=validationError = false;
+
 
 
 var connection = mysql.createConnection({
@@ -26,7 +28,7 @@ connection.connect(function(error) {
   if (error) throw error;
 });
 
-term.green(`\nWelcome To Bamazon! Taking over the world 10 products at a time!\n`); 
+term.brightGreen(`\nWelcome To Bamazon! Taking over the world 10 products at a time!\n`); 
 
 getProductsTableData();
 
@@ -63,8 +65,19 @@ var questions = [{
 }]
 function promptUser(userPrompts){
   inquirer.prompt(userPrompts).then(answers => {
-    itemID = answers.ProductID;
-    quantityOrdered = answers.quantity;
+    itemID = parseInt(answers.ProductID);
+    quantityOrdered = parseInt(answers.quantity);
+    if (!Number.isInteger(itemID) || itemID < 1 || itemID > 10) {
+      term.brightRed(`\nID must be a whole number between 1 and 10.  Order Canceled.\n`);
+      validationError = true;
+    }
+    if (!Number.isInteger(quantityOrdered) || quantityOrdered < 1) {
+      term.brightRed(`\nQuantity must be a whole number greater than zero. Order Canceled.\n`);
+      validationError = true; 
+    }
+    if (validationError) {
+      process.exit();
+    }
     checkStock(itemID, quantityOrdered);
     
   });
@@ -77,16 +90,16 @@ function checkStock(ID, quantityRequested){
     let quantityInStock = result[0].stock_quantity;
     let price = result[0].price;
 
-    //connection.end();
     if (quantityRequested <= quantityInStock) {
       price = quantityRequested * price;
-      term.green(`\nThank you for your order.  Your total is $${price.toFixed(2)}.\n`);
+      term.brightGreen(`\nThank you for your order.  Your total is $${price.toFixed(2)}.\n`);
       connection.query(`UPDATE products SET stock_quantity = ${quantityInStock - quantityRequested} WHERE item_id = ${ID}`, function(error, result) {
         if (error) throw error;
       });
       connection.end();
     } else {
-      term.red(`\nQuantity exceeds available stock.  Order Canceled.\n`); 
+      term.brightRed(`\nQuantity exceeds available stock.  Order Canceled.\n`); 
+      process.exit();
     }
   });
 }
