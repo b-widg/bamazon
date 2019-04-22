@@ -12,7 +12,7 @@ var inquirer = require('inquirer');   // https://www.npmjs.com/package/inquirer#
 
 var quantityOrdered = 0;
 var itemID = 0;
-var c=validationError = false;
+var validationError = false;
 
 
 
